@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         edt = findViewById(R.id.editText);
-        btn =findViewById(R.id.button);
+        btn = findViewById(R.id.button);
         mRecyclerView = findViewById(R.id.recyclerView);
 
 
@@ -44,9 +45,23 @@ public class MainActivity extends AppCompatActivity {
 
         Cursor cursor = getAllNames();
 
-        mRecyclerViewAdapter=new RecyclerViewAdapter(this,cursor);
+        mRecyclerViewAdapter = new RecyclerViewAdapter(this, cursor);
 
         mRecyclerView.setAdapter(mRecyclerViewAdapter);
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                long id= (long) viewHolder.itemView.getTag();
+                removeGuest(id);
+                mRecyclerViewAdapter.swapCursor(getAllNames());
+            }
+        }).attachToRecyclerView(mRecyclerView);
 
     }
 
@@ -65,20 +80,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void addGuest(View view)
-    {
+    public void addGuest(View view) {
         addNewGuest(edt.getText().toString());
         mRecyclerViewAdapter.swapCursor(getAllNames());
-        
+
         edt.getText().clear();
 
     }
-    private long addNewGuest(String name)
-    {
-        ContentValues cv= new ContentValues();
-        cv.put(Contract.Entry.COLUMN_NAME,name);
 
-       return mDb.insert(Contract.Entry.TABLE_NAME,null,cv);
+    private long addNewGuest(String name) {
+        ContentValues cv = new ContentValues();
+        cv.put(Contract.Entry.COLUMN_NAME, name);
+
+        return mDb.insert(Contract.Entry.TABLE_NAME, null, cv);
+    }
+
+    private boolean removeGuest(long id) {
+       return mDb.delete(Contract.Entry.TABLE_NAME, Contract.Entry._ID + "=" + id, null) > 0;
     }
 
 }

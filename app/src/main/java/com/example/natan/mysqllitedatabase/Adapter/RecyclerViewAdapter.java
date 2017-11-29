@@ -43,7 +43,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             return; //
 
         String name=mCursor.getString(mCursor.getColumnIndex(Contract.Entry.COLUMN_NAME));
+        long id=mCursor.getLong(mCursor.getColumnIndex(Contract.Entry._ID));
         holder.txt.setText(name);
+
+        holder.itemView.setTag(id);
     }
 
     @Override
